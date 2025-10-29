@@ -9,14 +9,12 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import com.oims.smsread.data.remote.network.ApiService
+import com.oims.smsread.R
 import com.oims.smsread.presentation.features.readsms.receiver.MessageListener
 import com.oims.smsread.presentation.features.readsms.receiver.MessageReceiver
 import com.oims.smsread.presentation.features.readsms.viewmodel.MainViewModel
 import org.koin.android.ext.android.inject
-import org.koin.compose.koinInject
 
 /**
  *Created by SATYAA on 24/11/24.
@@ -35,7 +33,6 @@ class SmsReceiverService : Service() {
         private const val TATA_AIG = "Tata AIG"
     }
 
-    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onCreate() {
         super.onCreate()
         // Create the notification channel for Android 8.0 (Oreo) and above
@@ -72,18 +69,23 @@ class SmsReceiverService : Service() {
             manager.createNotificationChannel(serviceChannel)
         }
     }
-
-    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     private fun startForegroundService() {
         val notification = NotificationCompat.Builder(this, NOTIFICATION_ID)
             .setContentTitle(NOTIFICATION_TITLE)
-            .setPriority(NotificationCompat.PRIORITY_MIN)
-            .setAutoCancel(false)
+            .setContentText("Running in background")
+            .setSmallIcon(R.mipmap.ic_launcher) // Use your own small icon
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
             .build()
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            startForeground(1, notification)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(
+                1,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+            )
         } else {
-            startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+            startForeground(1, notification)
         }
     }
 
@@ -110,21 +112,6 @@ class SmsReceiverService : Service() {
             )
             companyName = companyMap.entries
                 .firstOrNull {inputString.contains(it.key, ignoreCase = true)}?.value ?: ""
-//             companyName = when {
-//                inputString.contains("HDFC ERGO") -> {
-//                    HDFC
-//                }
-//
-//                inputString.contains("One.MediAssist.In") -> {
-//                    MEDI_ASSIST
-//                }
-//
-//                inputString.contains("Tata AIG") -> {
-//                    TATA_AIG
-//                }
-//
-//                else -> ""
-//            }
         }
         return Pair(companyName, code)
     }
