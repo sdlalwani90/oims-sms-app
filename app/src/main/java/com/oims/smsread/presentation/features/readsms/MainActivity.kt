@@ -1,10 +1,6 @@
 package com.oims.smsread.presentation.features.readsms
 
-import android.app.ActivityManager
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -20,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.oims.smsread.presentation.features.readsms.service.SmsReceiverService
 import com.oims.smsread.presentation.ui.theme.SmsReadAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -37,23 +32,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-        // Register receiver after setting content for better lifecycle management
-        if (!isServiceRunning(this, SmsReceiverService::class.java)) {
-            val intent = Intent(this, SmsReceiverService::class.java)
-            startService(intent)
-        }else{
-            Log.d("SMS","Alreadt")
-        }
     }
-
-
-    private fun isServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
-        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val services = activityManager.getRunningServices(Integer.MAX_VALUE)
-        return services.any { it.service.className == serviceClass.name }
-    }
-
 }
 
 

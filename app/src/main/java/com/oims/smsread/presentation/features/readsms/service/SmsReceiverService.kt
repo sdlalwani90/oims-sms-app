@@ -11,9 +11,9 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.oims.smsread.R
-import com.oims.smsread.presentation.features.readsms.receiver.MessageListener
 import com.oims.smsread.presentation.features.readsms.receiver.MessageReceiver
 import com.oims.smsread.presentation.features.readsms.viewmodel.MainViewModel
+import com.oims.smsread.presentation.utils.SmsParser
 import org.koin.android.ext.android.inject
 
 /**
@@ -28,9 +28,10 @@ class SmsReceiverService : Service() {
         private const val NOTIFICATION_ID = "SMSChannel"
         private const val NOTIFICATION_NAME = "SMS Service Channel"
         private const val NOTIFICATION_TITLE = "Read incoming SMS"
-        private const val HDFC = "hdfc"
-        private const val MEDI_ASSIST = "MediAssist"
-        private const val TATA_AIG = "Tata AIG"
+//        private const val HDFC = "hdfc"
+//        private const val MEDI_ASSIST = "MediAssist"
+//        private const val TATA_AIG = "Tata AIG"
+//        private const val STAR_HEALTH = "STAR Health Insurance"
     }
 
     override fun onCreate() {
@@ -42,11 +43,11 @@ class SmsReceiverService : Service() {
         val intentFilter = IntentFilter("android.provider.Telephony.SMS_RECEIVED")
         registerReceiver(messageReceiver, intentFilter)
 
-        messageReceiver.bindListener(object : MessageListener {
-            override fun messageReceived(message: String?) {
-                callSubmitOTPAPI(message)
-            }
-        })
+//        messageReceiver.bindListener(object : MessageListener {
+//            override fun messageReceived(message: String?) {
+//                callSubmitOTPAPI(message)
+//            }
+//        })
     }
 
     override fun onDestroy() {
@@ -91,7 +92,7 @@ class SmsReceiverService : Service() {
 
     private fun callSubmitOTPAPI(msg: String?){
         msg?.let {
-            val (companyName,code) = extractAccessCodeAndCompanyName(it)
+            val (companyName, code) = SmsParser.parse(msg)
             if(companyName.isNotEmpty() && code.isNotEmpty()){
                 Log.d("SMSReceived","values cName: $companyName , Code: $code")
                 viewModel.submitOTP(companyName,code)
@@ -99,21 +100,22 @@ class SmsReceiverService : Service() {
         }
     }
 
-    private fun extractAccessCodeAndCompanyName(inputString: String): Pair<String, String> {
-        val regex = "\\d{6}".toRegex() // Matches a 6-digit number
-        val codeMatchResult = regex.find(inputString)
-        val code = codeMatchResult?.value ?: ""
-        var companyName = ""
-        if(code.isNotEmpty()) {
-            val companyMap = mapOf(
-                "HDFC ERGO" to HDFC,
-                "MediAssist" to MEDI_ASSIST,
-                "Tata AIG" to TATA_AIG
-            )
-            companyName = companyMap.entries
-                .firstOrNull {inputString.contains(it.key, ignoreCase = true)}?.value ?: ""
-        }
-        return Pair(companyName, code)
-    }
+//    private fun extractAccessCodeAndCompanyName(inputString: String): Pair<String, String> {
+//        val regex = Regex("(?i)otp\\D*(\\b\\d{4}\\b|\\b\\d{6}\\b)")
+//        val match = regex.find(inputString)
+//        val code = match?.groupValues?.get(1) ?: ""
+//        var companyName = ""
+//        if(code.isNotEmpty()) {
+//            val companyMap = mapOf(
+//                "HDFC ERGO" to HDFC,
+//                "MediAssist" to MEDI_ASSIST,
+//                "Tata AIG" to TATA_AIG,
+//                "STAR Health Insurance" to STAR_HEALTH
+//            )
+//            companyName = companyMap.entries
+//                .firstOrNull {inputString.contains(it.key, ignoreCase = true)}?.value ?: ""
+//        }
+//        return Pair(companyName, code)
+//    }
 
 }

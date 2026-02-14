@@ -1,6 +1,6 @@
 package com.oims.smsread.di
 
-import com.oims.smsread.data.remote.network.ApiService
+import com.oims.smsread.data.repository.SubmitOTPRepository
 import com.oims.smsread.data.repository.SubmitOTPRepositoryImpl
 import org.koin.dsl.module
 
@@ -10,9 +10,10 @@ import org.koin.dsl.module
  */
 
 val repositoryModule = module {
-    single { provideSubmitRepository(get()) }
-}
-
-fun provideSubmitRepository(apiService: ApiService) : SubmitOTPRepositoryImpl{
-    return SubmitOTPRepositoryImpl(apiService)
+    single<SubmitOTPRepository> {
+        SubmitOTPRepositoryImpl(apiService = get())
+    }
+    single {
+        SubmitOTPRepositoryImpl(apiService = get())
+    }
 }
