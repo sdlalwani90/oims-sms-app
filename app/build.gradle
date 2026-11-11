@@ -18,6 +18,38 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Release signing uses the same OIMS key as oims-mobile-app: a folder holding OIMS.jks plus
+    // certificate.txt with "Alias: ..." and "Password: ..." lines. The folder is
+    // oims.certificateDir in local.properties (not in git), else app/certificate (ignored by git).
+    // The secrets are read at build time and never stored here. Without them, release stays unsigned.
+    def localProps = new Properties()
+    def localPropsFile = rootProject.file("local.properties")
+    if (localPropsFile.exists()) localPropsFile.withInputStream { localProps.load(it) }
+    def certificateDir = localProps.getProperty("oims.certificateDir")?.with { file(it) } ?: file("certificate")
+    def releaseKeystore = new File(certificateDir, "OIMS.jks")
+    def releaseCredentials = new File(certificateDir, "certificate.txt")
+    def releaseSigningAvailable = releaseKeystore.exists() && releaseCredentials.exists()
+    if (releaseSigningAvailable) {
+        def credentials = [:]
+        releaseCredentials.eachLine { line ->
+            def separator = line.indexOf(':')
+            if (separator > 0) {
+                credentials[line.substring(0, separator).trim().toLowerCase()] =
+                        line.substring(separator + 1).trim()
+            }
+        }
+        signingConfigs {
+            release {
+                storeFile releaseKeystore
+                storePassword credentials['password']
+                keyAlias credentials['alias']
+                keyPassword credentials['password']
+            }
+        }
+    } else {
+        logger.warn("Release signing: no OIMS.jks + certificate.txt in ${certificateDir}; the release APK will be unsigned.")
+    }
+
     buildTypes {
         debug {
             buildConfigField("String","BASE_URL","\"https://dev-api.oracleia.co.in\"")
@@ -30,6 +62,9 @@ android {
             debuggable false
             minifyEnabled true
             shrinkResources true
+            if (releaseSigningAvailable) {
+                signingConfig signingConfigs.release
+            }
 
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

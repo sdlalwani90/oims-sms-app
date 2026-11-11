@@ -13,3 +13,12 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Kotlin build cache
+.kotlin/
+
+# Release signing secrets: never commit keystores or their passwords
+*.jks
+*.keystore
+certificate.txt
+/app/certificate/
