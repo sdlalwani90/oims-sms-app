@@ -17,7 +17,8 @@ object SmsParser {
         Regex("hdfc\\s*ergo", RegexOption.IGNORE_CASE) to "hdfc",
         Regex("medi\\s*assist", RegexOption.IGNORE_CASE) to "MediAssist",
         Regex("tata\\s*aig", RegexOption.IGNORE_CASE) to "Tata AIG",
-        Regex("star\\s*health", RegexOption.IGNORE_CASE) to "STAR Health Insurance"
+        Regex("star\\s*health", RegexOption.IGNORE_CASE) to "STAR Health Insurance",
+        Regex("care\\s*health", RegexOption.IGNORE_CASE) to "Care Health Insurance"
     )
 
     fun parse(input: String): Pair<String, String> {
