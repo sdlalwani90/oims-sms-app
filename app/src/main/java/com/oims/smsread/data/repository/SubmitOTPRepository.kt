@@ -5,5 +5,6 @@ package com.oims.smsread.data.repository
  * Copyright (c) 2024 smsReadApp All rights reserved.
  */
  interface SubmitOTPRepository  {
-    suspend fun submitOtp(cName:String,code:String)
+    /** Posts the OTP; true when the server accepted it. */
+    suspend fun submitOtp(cName: String, code: String): Boolean
 }

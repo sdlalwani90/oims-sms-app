@@ -6,6 +6,8 @@ import android.content.Intent
 import android.os.Build
 import android.telephony.SmsMessage
 import android.util.Log
+import com.oims.smsread.data.local.PostStatus
+import com.oims.smsread.data.local.RecentOtpStore
 import com.oims.smsread.data.repository.SubmitOTPRepositoryImpl
 import com.oims.smsread.presentation.utils.SmsParser
 import kotlinx.coroutines.CoroutineScope
@@ -52,13 +54,20 @@ class MessageReceiver : BroadcastReceiver() {
             val (company, code) = SmsParser.parse(message)
             Log.i("SMSReceived", "company: $company , code: $code")
             if (company.isNotEmpty() && code.isNotEmpty()) {
+                // Shown on the main screen for 10 minutes, with whether the post succeeded.
+                val store = context?.let { RecentOtpStore.get(it) }
+                val capturedAt = System.currentTimeMillis()
+                store?.record(company, code, capturedAt)
+
                 val pendingResult = goAsync()
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         Log.i("SMSReceived", "sending otp....")
-                        repository.submitOtp(company, code)
+                        val posted = repository.submitOtp(company, code)
+                        store?.setStatus(company, capturedAt, if (posted) PostStatus.POSTED else PostStatus.FAILED)
                     } catch (e: Exception) {
                         Log.e("SMSReceived", "OTP API failed: ${e.message}")
+                        store?.setStatus(company, capturedAt, PostStatus.FAILED)
                     } finally {
                         pendingResult.finish()
                     }

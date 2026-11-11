@@ -12,20 +12,18 @@ import io.ktor.http.isSuccess
 class SubmitOTPRepositoryImpl(
     private val apiService: ApiService
 ) : SubmitOTPRepository {
-    override suspend fun submitOtp(cName: String, code: String) {
-        runCatching {
-            try {
-                val response = apiService.submitOTP(cName, code)
-                if (response.status.isSuccess()) {
-                    Log.d("SMSReceived", "Submit OTP successful")
-                } else {
-                    Log.w("SMSReceived", "Submit OTP Failed ${response.status.value} ")
-                }
-            } catch (e: Exception) {
-                Log.e("SMSReceived", "Submit Error: ${e.message} ")
+    override suspend fun submitOtp(cName: String, code: String): Boolean =
+        try {
+            val response = apiService.submitOTP(cName, code)
+            if (response.status.isSuccess()) {
+                Log.d("SMSReceived", "Submit OTP successful")
+                true
+            } else {
+                Log.w("SMSReceived", "Submit OTP Failed ${response.status.value} ")
+                false
             }
+        } catch (e: Exception) {
+            Log.e("SMSReceived", "Submit Error: ${e.message} ")
+            false
         }
-    }
-
-
 }
